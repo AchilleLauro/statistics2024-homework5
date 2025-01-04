@@ -1,120 +1,151 @@
-// Canvas context for charts
-const serverPenCtx = document.getElementById('serverPenetrationChart').getContext('2d');
-const attackerDistCtx = document.getElementById('attackerDistributionChart').getContext('2d');
+// Listener per cambiare i parametri visualizzati in base al tipo di simulazione
+document.getElementById('simulationType').addEventListener('change', function () {
+    const simulationType = this.value;
+    const parameterSections = document.querySelectorAll('.parameter-group');
 
-// Global chart variables
-let serverPenetrationGraph = null;
-let attackerDistGraph = null;
+    // Nasconde tutte le sezioni dei parametri
+    parameterSections.forEach(section => section.style.display = 'none');
 
-// Class to manage simulations
-class SDEFramework {
-    constructor() {
-        this.results = [];
+    // Mostra solo i parametri necessari
+    switch (simulationType) {
+        case 'simpleEM':
+            document.getElementById('simpleEMParams').style.display = 'block';
+            break;
+        case 'randomWalk':
+            document.getElementById('randomWalkParams').style.display = 'block';
+            break;
+        case 'continuousProcess':
+            document.getElementById('continuousProcessParams').style.display = 'block';
+            break;
+        case 'refinedEM':
+            document.getElementById('refinedEMParams').style.display = 'block';
+            break;
     }
+});
 
-    simpleEulerMaruyama(numServers, numAttackers, successProb) {
-        const attackResults = Array.from({ length: numAttackers }, () => [0]);
-        for (let attacker = 0; attacker < numAttackers; attacker++) {
-            let penetrations = 0;
-            for (let server = 1; server <= numServers; server++) {
-                if (Math.random() < successProb) penetrations++;
-                attackResults[attacker].push(penetrations);
-            }
+// Listener per avviare la simulazione
+document.getElementById('runSimulation').addEventListener('click', function () {
+    const simulationType = document.getElementById('simulationType').value;
+
+    switch (simulationType) {
+        case 'simpleEM':
+            runSimpleEM();
+            break;
+        case 'randomWalk':
+            runRandomWalk();
+            break;
+        case 'continuousProcess':
+            runContinuousProcess();
+            break;
+        case 'refinedEM':
+            runRefinedEM();
+            break;
+    }
+});
+
+// Logica per Simple Euler-Maruyama
+function runSimpleEM() {
+    const hackerCount = parseInt(document.getElementById('hackerCountSimple').value);
+    const serverCount = parseInt(document.getElementById('serverCount').value);
+    const penetrationProb = parseFloat(document.getElementById('penetrationProb').value);
+
+    const attackResults = Array.from({ length: hackerCount }, () => [0]);
+    for (let hacker = 0; hacker < hackerCount; hacker++) {
+        let penetrations = 0;
+        for (let server = 1; server <= serverCount; server++) {
+            if (Math.random() < penetrationProb) penetrations++;
+            attackResults[hacker].push(penetrations);
         }
-        this.results = attackResults;
-        this.visualizeResults(numServers, numAttackers, this.getFinalPenetrations());
     }
 
-    randomWalk(numServers, numAttackers, successProb, isRelative = false) {
-        const attackResults = Array.from({ length: numAttackers }, () => [0]);
-        for (let attacker = 0; attacker < numAttackers; attacker++) {
-            let penetrations = 0;
-            for (let server = 1; server <= numServers; server++) {
-                penetrations += Math.random() < successProb ? 1 : -1;
-                attackResults[attacker].push(isRelative ? penetrations / numServers : penetrations);
-            }
-        }
-        this.results = attackResults;
-        this.visualizeResults(numServers, numAttackers, this.getFinalPenetrations());
-    }
-
-    continuousProcess(numAttackers, lambda, timeSteps) {
-        const dt = 1 / timeSteps;
-        const attackResults = Array.from({ length: numAttackers }, () => [0]);
-        for (let attacker = 0; attacker < numAttackers; attacker++) {
-            let penetrations = 0;
-            for (let step = 1; step <= timeSteps; step++) {
-                if (Math.random() < lambda * dt) penetrations++;
-                attackResults[attacker].push(penetrations);
-            }
-        }
-        this.results = attackResults;
-        this.visualizeResults(timeSteps, numAttackers, this.getFinalPenetrations());
-    }
-
-    refinedEulerMaruyama(numAttackers, timeSteps, p) {
-        const dt = 1 / timeSteps;
-        const attackResults = Array.from({ length: numAttackers }, () => [0]);
-        for (let attacker = 0; attacker < numAttackers; attacker++) {
-            for (let step = 1; step <= timeSteps; step++) {
-                const jump = (Math.random() < p ? 1 : -1) * Math.sqrt(dt);
-                const lastValue = attackResults[attacker][step - 1];
-                attackResults[attacker].push(lastValue + jump);
-            }
-        }
-        this.results = attackResults;
-        this.visualizeResults(timeSteps, numAttackers, this.getFinalPenetrations());
-    }
-
-    getFinalPenetrations() {
-        return this.results.map(path => path[path.length - 1]);
-    }
-
-    visualizeResults(steps, paths, finalPenetrations) {
-        renderLineChart(this.results, steps, paths);
-        renderHistogram(finalPenetrations);
-    }
+    renderLineChart(attackResults, serverCount);
+    renderHistogram(attackResults.map(path => path[path.length - 1]));
 }
 
-// Function to render line chart
-function renderLineChart(results, steps, paths) {
-    const labels = Array.from({ length: steps }, (_, i) => `${i + 1}`);
+// Logica per Random Walk
+function runRandomWalk() {
+    const hackerCount = parseInt(document.getElementById('hackerCountRandom').value);
+    const serverCount = parseInt(document.getElementById('serverCountRandom').value);
+    const penetrationProb = parseFloat(document.getElementById('penetrationProbRandom').value);
+    const isRelative = document.getElementById('isRelative').checked;
+
+    const attackResults = Array.from({ length: hackerCount }, () => [0]);
+    for (let hacker = 0; hackerCount; hacker++) {
+        let penetrations = 0;
+        for (let server = 1; server <= serverCount; server++) {
+            penetrations += Math.random() < penetrationProb ? 1 : -1;
+            attackResults[hacker].push(isRelative ? penetrations / serverCount : penetrations);
+        }
+    }
+
+    renderLineChart(attackResults, serverCount);
+    renderHistogram(attackResults.map(path => path[path.length - 1]));
+}
+
+// Logica per Continuous Process
+function runContinuousProcess() {
+    const hackerCount = parseInt(document.getElementById('hackerCountContinuous').value);
+    const lambda = parseFloat(document.getElementById('attackRate').value);
+    const timeSteps = parseInt(document.getElementById('timeStepsContinuous').value);
+
+    const attackResults = Array.from({ length: hackerCount }, () => [0]);
+    for (let hacker = 0; hacker < hackerCount; hacker++) {
+        let penetrations = 0;
+        for (let step = 1; step <= timeSteps; step++) {
+            if (Math.random() < lambda * (1 / timeSteps)) penetrations++;
+            attackResults[hacker].push(penetrations);
+        }
+    }
+
+    renderLineChart(attackResults, timeSteps);
+    renderHistogram(attackResults.map(path => path[path.length - 1]));
+}
+
+// Logica per Refined Euler-Maruyama
+function runRefinedEM() {
+    const hackerCount = parseInt(document.getElementById('hackerCountRefined').value);
+    const timeSteps = parseInt(document.getElementById('timeStepsRefined').value);
+    const jumpProbability = parseFloat(document.getElementById('jumpProbability').value);
+
+    const attackResults = Array.from({ length: hackerCount }, () => [0]);
+    for (let hacker = 0; hacker < hackerCount; hacker++) {
+        for (let step = 1; step <= timeSteps; step++) {
+            const jump = (Math.random() < jumpProbability ? 1 : -1) * Math.sqrt(1 / timeSteps);
+            const lastValue = attackResults[hacker][step - 1];
+            attackResults[hacker].push(lastValue + jump);
+        }
+    }
+
+    renderLineChart(attackResults, timeSteps);
+    renderHistogram(attackResults.map(path => path[path.length - 1]));
+}
+
+// Funzione per disegnare il grafico a linee
+function renderLineChart(results, steps) {
+    const labels = Array.from({ length: steps + 1 }, (_, i) => i);
     const datasets = results.map((data, idx) => ({
         label: `Path ${idx + 1}`,
         data,
         borderColor: `rgba(${Math.random() * 200 + 55}, ${Math.random() * 200 + 55}, ${Math.random() * 200 + 55}, 0.9)`,
         fill: false,
-        stepped: true,
         borderWidth: 2
     }));
 
-    if (serverPenetrationGraph) {
-        serverPenetrationGraph.destroy(); // Destroy existing chart
-    }
-
-    serverPenetrationGraph = new Chart(serverPenCtx, {
+    const ctx = document.getElementById('serverPenetrationChart').getContext('2d');
+    new Chart(ctx, {
         type: 'line',
         data: { labels, datasets },
-        options: {
-            scales: {
-                y: { beginAtZero: true, ticks: { color: '#999' } },
-                x: { ticks: { color: '#999' } }
-            },
-            plugins: { legend: { display: true } }
-        }
+        options: { responsive: true, plugins: { legend: { display: true } } }
     });
 }
 
-// Function to render histogram
+// Funzione per disegnare l'istogramma
 function renderHistogram(finalPenetrations) {
     const labels = [...new Set(finalPenetrations)].sort((a, b) => a - b);
     const data = labels.map(label => finalPenetrations.filter(x => x === label).length);
 
-    if (attackerDistGraph) {
-        attackerDistGraph.destroy(); // Destroy existing chart
-    }
-
-    attackerDistGraph = new Chart(attackerDistCtx, {
+    const ctx = document.getElementById('attackerDistributionChart').getContext('2d');
+    new Chart(ctx, {
         type: 'bar',
         data: {
             labels,
@@ -126,47 +157,7 @@ function renderHistogram(finalPenetrations) {
                 borderWidth: 1
             }]
         },
-        options: {
-            scales: {
-                y: { beginAtZero: true, ticks: { color: '#999' } },
-                x: { ticks: { color: '#999' } }
-            },
-            plugins: { legend: { display: true } }
-        }
+        options: { responsive: true, plugins: { legend: { display: true } } }
     });
 }
-
-// Event listeners
-document.getElementById('simulationType').addEventListener('change', function () {
-    document.querySelectorAll('.parameter-group').forEach(group => group.style.display = 'none');
-    document.getElementById(this.value + 'Params').style.display = 'block';
-});
-
-document.getElementById('runSimulation').addEventListener('click', function () {
-    const simulationType = document.getElementById('simulationType').value;
-    const simulator = new SDEFramework();
-
-    // Parametri generici
-    const numAttackers = parseInt(document.getElementById('hackerCount').value);
-
-    // Esegui simulazione basata sul tipo selezionato
-    if (simulationType === 'simpleEM') {
-        const numServers = parseInt(document.getElementById('serverCount').value);
-        const successProb = parseFloat(document.getElementById('penetrationProb').value);
-        simulator.simpleEulerMaruyama(numServers, numAttackers, successProb);
-    } else if (simulationType === 'randomWalk') {
-        const numServers = parseInt(document.getElementById('serverCount').value);
-        const successProb = parseFloat(document.getElementById('penetrationProb').value);
-        const isRelative = document.getElementById('isRelative').checked;
-        simulator.randomWalk(numServers, numAttackers, successProb, isRelative);
-    } else if (simulationType === 'continuousProcess') {
-        const lambda = parseFloat(document.getElementById('attackRate').value);
-        const timeSteps = parseInt(document.getElementById('timeSteps').value);
-        simulator.continuousProcess(numAttackers, lambda, timeSteps);
-    } else if (simulationType === 'refinedEM') {
-        const timeSteps = parseInt(document.getElementById('timeSteps').value);
-        const p = parseFloat(document.getElementById('jumpProbability').value);
-        simulator.refinedEulerMaruyama(numAttackers, timeSteps, p);
-    }
-});
 
