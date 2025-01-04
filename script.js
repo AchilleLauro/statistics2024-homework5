@@ -126,20 +126,37 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function runContinuousProcess() {
-        const numAttackers = parseInt(document.getElementById('hackerCountContinuous').value);
-        const lambda = parseFloat(document.getElementById('attackRate').value);
-        const timeSteps = parseInt(document.getElementById('timeStepsContinuous').value);
+    const numAttackers = parseInt(document.getElementById('hackerCountContinuous').value);
+    const lambda = parseFloat(document.getElementById('attackRate').value);
+    const timeSteps = parseInt(document.getElementById('timeStepsContinuous').value);
+    const dt = 1 / timeSteps; // Intervallo temporale infinitesimale
 
-        const results = Array.from({ length: numAttackers }, () => [0]);
-        for (let i = 0; i < numAttackers; i++) {
-            for (let j = 1; j <= timeSteps; j++) {
-                results[i].push(results[i][j - 1] + (Math.random() < lambda / timeSteps ? 1 : 0));
-            }
+    const results = Array.from({ length: numAttackers }, () => [0]); // Dati dei percorsi
+    const finalPenetrations = []; // Penetrazioni finali
+
+    // Generazione dei dati di simulazione
+    for (let attacker = 0; attacker < numAttackers; attacker++) {
+        let penetrations = 0;
+        for (let step = 1; step <= timeSteps; step++) {
+            // Calcolo della probabilità di salto
+            const attackSuccess = Math.random() < lambda * dt;
+            penetrations += attackSuccess ? 1 : 0;
+            results[attacker].push(penetrations); // Aggiungi il valore corrente
         }
-
-        renderLineChart(results, timeSteps);
-        renderHistogram(results.map(res => res[res.length - 1]));
+        finalPenetrations.push(penetrations); // Registra la penetrazione finale
     }
+
+    // Calcolo media e varianza
+    const mean = finalPenetrations.reduce((sum, x) => sum + x, 0) / numAttackers;
+    const variance = finalPenetrations.reduce((sum, x) => sum + Math.pow(x - mean, 2), 0) / numAttackers;
+
+    console.log(`Mean: ${mean.toFixed(4)}, Variance: ${variance.toFixed(4)}`);
+
+    // Aggiorna i grafici
+    renderLineChart(results, timeSteps);
+    renderHistogram(finalPenetrations);
+}
+
 
     function runRefinedEM() {
         const numAttackers = parseInt(document.getElementById('hackerCountRefined').value);
