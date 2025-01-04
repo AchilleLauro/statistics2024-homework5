@@ -119,44 +119,63 @@
     </div>
 
     <h1>Penetration Simulation</h1>
-     <form id="configForm">
-        <div>
-            <label for="serverCount">Number of Servers:</label>
-            <input type="number" id="serverCount" min="1" value="10">
-        </div>
-        <div>
+      <label for="simulationType">Select Simulation Type:</label>
+    <select id="simulationType">
+        <option value="simpleEM">Simple Euler-Maruyama</option>
+        <option value="randomWalk">Random Walk</option>
+        <option value="continuousProcess">Continuous Process</option>
+        <option value="refinedEM">Refined EM</option>
+    </select>
+
+    <!-- Parametri dinamici -->
+    <div id="parameterSection">
+        <!-- Parametri generici -->
+        <div class="parameter-group" id="genericParams">
             <label for="hackerCount">Number of Attackers:</label>
             <input type="number" id="hackerCount" min="1" value="5">
         </div>
-        <div>
+        
+        <!-- Parametri specifici per Simple EM -->
+        <div class="parameter-group" id="simpleEMParams">
+            <label for="serverCount">Number of Servers:</label>
+            <input type="number" id="serverCount" min="1" value="10">
             <label for="penetrationProb">Success Probability:</label>
             <input type="number" id="penetrationProb" step="0.01" min="0" max="1" value="0.5">
         </div>
-        <div>
-            <label for="attackRate">Lambda (Continuous Process):</label>
-            <input type="number" id="attackRate" step="0.01" min="0" value="0.1">
+
+        <!-- Parametri specifici per Random Walk -->
+        <div class="parameter-group" id="randomWalkParams">
+            <label for="serverCount">Number of Servers:</label>
+            <input type="number" id="serverCount" min="1" value="10">
+            <label for="penetrationProb">Success Probability:</label>
+            <input type="number" id="penetrationProb" step="0.01" min="0" max="1" value="0.5">
+            <label for="isRelative">Relative Frequency:</label>
+            <input type="checkbox" id="isRelative">
         </div>
-        <div>
+
+        <!-- Parametri specifici per Continuous Process -->
+        <div class="parameter-group" id="continuousProcessParams">
+            <label for="attackRate">Lambda:</label>
+            <input type="number" id="attackRate" step="0.01" min="0" value="0.1">
             <label for="timeSteps">Time Steps:</label>
             <input type="number" id="timeSteps" min="1" value="50">
         </div>
-        <div>
-            <label for="jumpProbability">Jump Probability (Refined EM):</label>
+
+        <!-- Parametri specifici per Refined EM -->
+        <div class="parameter-group" id="refinedEMParams">
+            <label for="timeSteps">Time Steps:</label>
+            <input type="number" id="timeSteps" min="1" value="50">
+            <label for="jumpProbability">Jump Probability:</label>
             <input type="number" id="jumpProbability" step="0.01" min="0" max="1" value="0.5">
         </div>
-        <div>
-            <label for="isRelative">Relative Frequency (Random Walk):</label>
-            <input type="checkbox" id="isRelative">
-        </div>
-    </form>
-
-    <div class="button-container">
-        <button id="runSimpleEM">Run Simple Euler-Maruyama</button>
-        <button id="runRandomWalk">Run Random Walk</button>
-        <button id="runContinuous">Run Continuous Process</button>
-        <button id="runRefinedEM">Run Refined EM</button>
     </div>
 
+    <!-- Pulsante per avviare la simulazione -->
+    <div class="button-container">
+        <button id="runSimulation">Run Simulation</button>
+    </div>
+
+    <!-- Grafici -->
     <div class="chart-container">
         <canvas id="serverPenetrationChart" width="400" height="200"></canvas>
     </div>
