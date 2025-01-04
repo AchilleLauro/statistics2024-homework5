@@ -102,7 +102,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // Simulazioni
     function runSimpleEM() {
         const numServers = parseInt(document.getElementById('serverCount').value);
-        const numAttackers = parseInt(document.getElementById('hackerCount').value);
+        const numAttackers = parseInt(document.getElementById('hackerCountSimple').value);
         const successProb = parseFloat(document.getElementById('penetrationProb').value);
 
         const results = Array.from({ length: numAttackers }, () => [0]);
@@ -117,9 +117,9 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function runRandomWalk() {
-        const numServers = parseInt(document.getElementById('serverCount').value);
-        const numAttackers = parseInt(document.getElementById('hackerCount').value);
-        const successProb = parseFloat(document.getElementById('penetrationProb').value);
+        const numServers = parseInt(document.getElementById('serverCountRandom').value);
+        const numAttackers = parseInt(document.getElementById('hackerCountRandom').value);
+        const successProb = parseFloat(document.getElementById('penetrationProbRandom').value);
         const isRelative = document.getElementById('isRelative').checked;
 
         const results = Array.from({ length: numAttackers }, () => [0]);
@@ -135,9 +135,9 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function runContinuousProcess() {
-        const numAttackers = parseInt(document.getElementById('hackerCount').value);
+        const numAttackers = parseInt(document.getElementById('hackerCountContinuous').value);
         const lambda = parseFloat(document.getElementById('attackRate').value);
-        const timeSteps = parseInt(document.getElementById('timeSteps').value);
+        const timeSteps = parseInt(document.getElementById('timeStepsContinuous').value);
 
         const results = Array.from({ length: numAttackers }, () => [0]);
         for (let i = 0; i < numAttackers; i++) {
@@ -151,8 +151,8 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function runRefinedEM() {
-        const numAttackers = parseInt(document.getElementById('hackerCount').value);
-        const timeSteps = parseInt(document.getElementById('timeSteps').value);
+        const numAttackers = parseInt(document.getElementById('hackerCountRefined').value);
+        const timeSteps = parseInt(document.getElementById('timeStepsRefined').value);
         const jumpProb = parseFloat(document.getElementById('jumpProbability').value);
 
         const results = Array.from({ length: numAttackers }, () => [0]);
@@ -177,4 +177,3 @@ document.addEventListener('DOMContentLoaded', function () {
         else if (selectedType === 'refinedEM') runRefinedEM();
     });
 });
-
