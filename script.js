@@ -14,24 +14,15 @@ document.addEventListener('DOMContentLoaded', function () {
             group.style.display = 'none';
         });
 
-        // Mostra solo i parametri generici e quelli specifici
-        const genericParams = document.getElementById('genericParams');
-        if (genericParams) {
-            genericParams.style.display = 'block';
-        }
-
+        // Mostra solo i parametri specifici
         if (selectedType === 'simpleEM') {
-            const simpleEMParams = document.getElementById('simpleEMParams');
-            if (simpleEMParams) simpleEMParams.style.display = 'block';
+            document.getElementById('simpleEMParams').style.display = 'block';
         } else if (selectedType === 'randomWalk') {
-            const randomWalkParams = document.getElementById('randomWalkParams');
-            if (randomWalkParams) randomWalkParams.style.display = 'block';
+            document.getElementById('randomWalkParams').style.display = 'block';
         } else if (selectedType === 'continuousProcess') {
-            const continuousProcessParams = document.getElementById('continuousProcessParams');
-            if (continuousProcessParams) continuousProcessParams.style.display = 'block';
+            document.getElementById('continuousProcessParams').style.display = 'block';
         } else if (selectedType === 'refinedEM') {
-            const refinedEMParams = document.getElementById('refinedEMParams');
-            if (refinedEMParams) refinedEMParams.style.display = 'block';
+            document.getElementById('refinedEMParams').style.display = 'block';
         }
     });
 
@@ -171,9 +162,24 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('runSimulation').addEventListener('click', function () {
         const selectedType = document.getElementById('simulationType').value;
 
-        if (selectedType === 'simpleEM') runSimpleEM();
-        else if (selectedType === 'randomWalk') runRandomWalk();
-        else if (selectedType === 'continuousProcess') runContinuousProcess();
-        else if (selectedType === 'refinedEM') runRefinedEM();
+        // Mostra i parametri per il tipo selezionato
+        document.querySelectorAll('.parameter-group').forEach(group => {
+            group.style.display = 'none';
+        });
+
+        if (selectedType === 'simpleEM') {
+            document.getElementById('simpleEMParams').style.display = 'block';
+            runSimpleEM();
+        } else if (selectedType === 'randomWalk') {
+            document.getElementById('randomWalkParams').style.display = 'block';
+            runRandomWalk();
+        } else if (selectedType === 'continuousProcess') {
+            document.getElementById('continuousProcessParams').style.display = 'block';
+            runContinuousProcess();
+        } else if (selectedType === 'refinedEM') {
+            document.getElementById('refinedEMParams').style.display = 'block';
+            runRefinedEM();
+        }
     });
 });
+
