@@ -146,24 +146,24 @@ document.getElementById('runSimulation').addEventListener('click', function () {
     const simulationType = document.getElementById('simulationType').value;
     const simulator = new SDEFramework();
 
+    // Parametri generici
+    const numAttackers = parseInt(document.getElementById('hackerCount').value);
+
+    // Esegui simulazione basata sul tipo selezionato
     if (simulationType === 'simpleEM') {
         const numServers = parseInt(document.getElementById('serverCount').value);
-        const numAttackers = parseInt(document.getElementById('hackerCount').value);
         const successProb = parseFloat(document.getElementById('penetrationProb').value);
         simulator.simpleEulerMaruyama(numServers, numAttackers, successProb);
     } else if (simulationType === 'randomWalk') {
         const numServers = parseInt(document.getElementById('serverCount').value);
-        const numAttackers = parseInt(document.getElementById('hackerCount').value);
         const successProb = parseFloat(document.getElementById('penetrationProb').value);
         const isRelative = document.getElementById('isRelative').checked;
         simulator.randomWalk(numServers, numAttackers, successProb, isRelative);
     } else if (simulationType === 'continuousProcess') {
-        const numAttackers = parseInt(document.getElementById('hackerCount').value);
         const lambda = parseFloat(document.getElementById('attackRate').value);
         const timeSteps = parseInt(document.getElementById('timeSteps').value);
         simulator.continuousProcess(numAttackers, lambda, timeSteps);
     } else if (simulationType === 'refinedEM') {
-        const numAttackers = parseInt(document.getElementById('hackerCount').value);
         const timeSteps = parseInt(document.getElementById('timeSteps').value);
         const p = parseFloat(document.getElementById('jumpProbability').value);
         simulator.refinedEulerMaruyama(numAttackers, timeSteps, p);
