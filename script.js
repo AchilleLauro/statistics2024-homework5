@@ -2,102 +2,112 @@ const serverPenCtx = document.getElementById('serverPenetrationChart').getContex
 const attackerDistCtx = document.getElementById('attackerDistributionChart').getContext('2d');
 let serverPenetrationGraph, attackerDistGraph;
 
-function createPenetrationData(numAttackers, lambda, timeSteps) {
-    const dt = 1 / timeSteps;  // Intervallo temporale infinitesimale
-    const attackResults = Array.from({ length: numAttackers }, () => [0]);
-    const finalPenetrations = Array(numAttackers).fill(0);
-    const savedScores = [];
-
-    for (let attacker = 0; attacker < numAttackers; attacker++) {
-        let penetrations = 0;
-        for (let step = 1; step <= timeSteps; step++) {
-            // Probabilità di attacco in questo intervallo dt
-            const attackSuccess = Math.random() < lambda * dt;
-            penetrations += attackSuccess ? 1 : 0;
-            attackResults[attacker].push(penetrations);
-
-            if (step === timeSteps) {
-                savedScores.push(penetrations);
-            }
-        }
-        finalPenetrations[attacker] = penetrations;
+class SDEFramework {
+    constructor() {
+        this.results = [];
     }
 
-    const penetrationDistribution = finalPenetrations.reduce((acc, numPenetrations) => {
-        acc[numPenetrations] = (acc[numPenetrations] || 0) + 1;
-        return acc;
-    }, {});
+    simpleEulerMaruyama(numServers, numAttackers, successProb) {
+        const attackResults = Array.from({ length: numAttackers }, () => [0]);
+        for (let attacker = 0; attacker < numAttackers; attacker++) {
+            let penetrations = 0;
+            for (let server = 1; server <= numServers; server++) {
+                if (Math.random() < successProb) penetrations++;
+                attackResults[attacker].push(penetrations);
+            }
+        }
+        this.results = attackResults;
+        this.visualizeResults(numServers, numAttackers, this.getFinalPenetrations());
+    }
 
-    const mean = finalPenetrations.reduce((sum, x) => sum + x, 0) / numAttackers;
-    let variance = finalPenetrations.reduce((sum, x) => sum + Math.pow(x - mean, 2), 0) / numAttackers;
+    randomWalk(numServers, numAttackers, successProb, isRelative = false) {
+        const attackResults = Array.from({ length: numAttackers }, () => [0]);
+        for (let attacker = 0; attacker < numAttackers; attacker++) {
+            let penetrations = 0;
+            for (let server = 1; server <= numServers; server++) {
+                penetrations += Math.random() < successProb ? 1 : -1;
+                attackResults[attacker].push(isRelative ? penetrations / numServers : penetrations);
+            }
+        }
+        this.results = attackResults;
+        this.visualizeResults(numServers, numAttackers, this.getFinalPenetrations());
+    }
 
-    return { attackResults, penetrationDistribution, mean, variance, savedScores };
+    continuousProcess(numAttackers, lambda, timeSteps) {
+        const dt = 1 / timeSteps;
+        const attackResults = Array.from({ length: numAttackers }, () => [0]);
+        for (let attacker = 0; attacker < numAttackers; attacker++) {
+            let penetrations = 0;
+            for (let step = 1; step <= timeSteps; step++) {
+                if (Math.random() < lambda * dt) penetrations++;
+                attackResults[attacker].push(penetrations);
+            }
+        }
+        this.results = attackResults;
+        this.visualizeResults(timeSteps, numAttackers, this.getFinalPenetrations());
+    }
+
+    refinedEulerMaruyama(numAttackers, timeSteps, p) {
+        const dt = 1 / timeSteps;
+        const attackResults = Array.from({ length: numAttackers }, () => [0]);
+        for (let attacker = 0; attacker < numAttackers; attacker++) {
+            for (let step = 1; step <= timeSteps; step++) {
+                const jump = (Math.random() < p ? 1 : -1) * Math.sqrt(dt);
+                const lastValue = attackResults[attacker][step - 1];
+                attackResults[attacker].push(lastValue + jump);
+            }
+        }
+        this.results = attackResults;
+        this.visualizeResults(timeSteps, numAttackers, this.getFinalPenetrations());
+    }
+
+    getFinalPenetrations() {
+        return this.results.map(path => path[path.length - 1]);
+    }
+
+    visualizeResults(steps, paths, finalPenetrations) {
+        renderLineChart(this.results, steps, paths);
+        renderHistogram(finalPenetrations);
+    }
 }
 
-function drawPenetrationGraph(numAttackers, lambda, timeSteps) {
-    const { attackResults, penetrationDistribution, mean, variance, savedScores } = createPenetrationData(numAttackers, lambda, timeSteps);
-    const labels = Array.from({ length: timeSteps }, (_, i) => `${i + 1}`);
-    const attackerDatasets = attackResults.map((attackerData, idx) => ({
-        label: `Attacker ${idx + 1}`,
-        data: attackerData,
+function renderLineChart(results, steps, paths) {
+    const labels = Array.from({ length: steps }, (_, i) => `${i + 1}`);
+    const datasets = results.map((data, idx) => ({
+        label: `Path ${idx + 1}`,
+        data,
         borderColor: `rgba(${Math.random() * 200 + 55}, ${Math.random() * 200 + 55}, ${Math.random() * 200 + 55}, 0.9)`,
         fill: false,
         stepped: true,
         borderWidth: 2
     }));
 
-    const yMin = 0;
-    const yMax = timeSteps;
-
     if (serverPenetrationGraph) {
-        serverPenetrationGraph.data.labels = ['Start', ...labels];
-        serverPenetrationGraph.data.datasets = attackerDatasets;
-        serverPenetrationGraph.options.scales.y.min = yMin;
-        serverPenetrationGraph.options.scales.y.max = yMax;
+        serverPenetrationGraph.data.labels = labels;
+        serverPenetrationGraph.data.datasets = datasets;
         serverPenetrationGraph.update();
     } else {
         serverPenetrationGraph = new Chart(serverPenCtx, {
             type: 'line',
-            data: {
-                labels: ['Start', ...labels],
-                datasets: attackerDatasets
-            },
+            data: { labels, datasets },
             options: {
                 scales: {
-                    y: { 
-                        min: yMin,
-                        max: yMax,
-                        grid: { display: false }, 
-                        ticks: { color: '#999' } 
-                    },
-                    x: { grid: { display: false }, ticks: { color: '#999' } }
+                    y: { beginAtZero: true, ticks: { color: '#999' } },
+                    x: { ticks: { color: '#999' } }
                 },
-                plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false } }
+                plugins: { legend: { display: true } }
             }
         });
     }
-
-    drawAttackerDistribution(penetrationDistribution, timeSteps, mean, variance, savedScores);
 }
 
-function drawAttackerDistribution(penetrationDistribution, timeSteps, mean, variance, savedScores) {
-    let minXValue = Math.min(...savedScores);
-    let maxXValue = Math.max(...savedScores);
-
-    const stepSize = 1;
-    const labels = Array.from({ length: Math.ceil((maxXValue - minXValue) / stepSize) + 1 }, (_, i) => (minXValue + i * stepSize).toFixed(1));
-
-    const distData = labels.map(label => {
-        const floatLabel = parseFloat(label);
-        return savedScores.filter(score => Math.abs(score - floatLabel) < stepSize / 2).length;
-    });
-
-    const maxYValue = Math.max(...distData);
+function renderHistogram(finalPenetrations) {
+    const labels = [...new Set(finalPenetrations)].sort((a, b) => a - b);
+    const data = labels.map(label => finalPenetrations.filter(x => x === label).length);
 
     if (attackerDistGraph) {
         attackerDistGraph.data.labels = labels;
-        attackerDistGraph.data.datasets[0].data = distData;
-        attackerDistGraph.options.scales.y.max = maxYValue;
+        attackerDistGraph.data.datasets[0].data = data;
         attackerDistGraph.update();
     } else {
         attackerDistGraph = new Chart(attackerDistCtx, {
@@ -105,7 +115,8 @@ function drawAttackerDistribution(penetrationDistribution, timeSteps, mean, vari
             data: {
                 labels,
                 datasets: [{
-                    data: distData,
+                    label: 'Final Distribution',
+                    data,
                     backgroundColor: 'rgba(54, 162, 235, 0.8)',
                     borderColor: 'rgba(54, 162, 235, 1)',
                     borderWidth: 1
@@ -113,34 +124,46 @@ function drawAttackerDistribution(penetrationDistribution, timeSteps, mean, vari
             },
             options: {
                 scales: {
-                    y: {
-                        min: 0,
-                        max: maxYValue,
-                        grid: { display: false }, 
-                        ticks: { color: '#999' }
-                    },
-                    x: {
-                        grid: { display: false }, 
-                        ticks: { color: '#999' }
-                    }
+                    y: { beginAtZero: true, ticks: { color: '#999' } },
+                    x: { ticks: { color: '#999' } }
                 },
-                plugins: { 
-                    legend: { display: false }, 
-                    tooltip: { mode: 'index', intersect: false } 
-                }
+                plugins: { legend: { display: true } }
             }
         });
     }
-
-    document.getElementById('mean').textContent = `Mean: ${mean.toFixed(4)}`;
-    document.getElementById('variance').textContent = `Variance: ${variance.toFixed(4)}`;
 }
 
-document.getElementById('runSimulationBtn').addEventListener('click', function() {
+// Event listeners to trigger simulations
+document.getElementById('runSimpleEM').addEventListener('click', () => {
+    const numServers = parseInt(document.getElementById('serverCount').value);
+    const numAttackers = parseInt(document.getElementById('hackerCount').value);
+    const successProb = parseFloat(document.getElementById('penetrationProb').value);
+    const simulator = new SDEFramework();
+    simulator.simpleEulerMaruyama(numServers, numAttackers, successProb);
+});
+
+document.getElementById('runRandomWalk').addEventListener('click', () => {
+    const numServers = parseInt(document.getElementById('serverCount').value);
+    const numAttackers = parseInt(document.getElementById('hackerCount').value);
+    const successProb = parseFloat(document.getElementById('penetrationProb').value);
+    const isRelative = document.getElementById('isRelative').checked;
+    const simulator = new SDEFramework();
+    simulator.randomWalk(numServers, numAttackers, successProb, isRelative);
+});
+
+document.getElementById('runContinuous').addEventListener('click', () => {
     const numAttackers = parseInt(document.getElementById('hackerCount').value);
     const lambda = parseFloat(document.getElementById('attackRate').value);
     const timeSteps = parseInt(document.getElementById('timeSteps').value);
-    drawPenetrationGraph(numAttackers, lambda, timeSteps);
+    const simulator = new SDEFramework();
+    simulator.continuousProcess(numAttackers, lambda, timeSteps);
 });
 
-drawPenetrationGraph(50, 50, 70);
+document.getElementById('runRefinedEM').addEventListener('click', () => {
+    const numAttackers = parseInt(document.getElementById('hackerCount').value);
+    const timeSteps = parseInt(document.getElementById('timeSteps').value);
+    const p = parseFloat(document.getElementById('jumpProbability').value);
+    const simulator = new SDEFramework();
+    simulator.refinedEulerMaruyama(numAttackers, timeSteps, p);
+});
+
