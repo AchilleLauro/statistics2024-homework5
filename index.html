@@ -10,35 +10,112 @@
 </head>
 <body>
     <div id="research">
-        <h1>E quando il tempo se ne va</h1>
-        <p>The concept of <strong>statistical independence</strong> in probability refers to a relationship between two events where the occurrence of one event does not impact the likelihood of the other occurring. If two events are independent, the probability that they happen simultaneously is simply the product of their individual probabilities. Formally, two events \( A \) and \( B \) are independent if:</p>
-        
-        <p>\[ P(A \cap B) = P(A) \times P(B) \]</p>
+       <h1>Homework 5: Cauchy-Schwarz and Independence vs. Uncorrelation</h1>
 
-        <h2>Analogies and Formal Definitions</h2>
-        <ul>
-            <li><strong>Independent Events:</strong> This equation implies that knowing whether \( A \) occurs provides no additional information about the likelihood of \( B \), and vice versa. In other words, the conditional probability of \( A \) given \( B \) is the same as the unconditional probability of \( A \):</li>
-        </ul>
-        
-        <p>\[ P(A | B) = P(A) \]</p>
+    <h2>1. Prove the Cauchy-Schwarz (C-S) Inequality</h2>
+    <p>
+        The <strong>Cauchy-Schwarz (C-S) inequality</strong> states that for any pair of vectors <code>u</code> and <code>v</code> 
+        in an inner product space, the following inequality holds:
+    </p>
+    <pre>| ⟨u, v⟩ |² ≤ ||u||² * ||v||²</pre>
+    <p>where:</p>
+    <ul>
+        <li><code>⟨u, v⟩</code> is the <strong>inner product</strong> of <code>u</code> and <code>v</code>,</li>
+        <li><code>||u||</code> and <code>||v||</code> are the <strong>norms</strong> of <code>u</code> and <code>v</code>, defined as:
+        <pre>||u|| = √⟨u, u⟩, ||v|| = √⟨v, v⟩.</pre></li>
+    </ul>
 
-        <h3>Practical Example</h3>
-        <p>Consider the roll of two dice. Let \( A \) represent the event "rolling a 4 on the first die" and \( B \) represent "rolling a 5 on the second die." Since the outcome of the first die has no effect on the second, the events \( A \) and \( B \) are independent. The probability of rolling a 4 on the first die is \( \frac{1}{6} \), and the probability of rolling a 5 on the second die is also \( \frac{1}{6} \). Thus, the probability that both events occur together is:</p>
-        
-        <p>\[ P(A \cap B) = \frac{1}{6} \times \frac{1}{6} = \frac{1}{36} \]</p>
+    <h3>Simplest Proof</h3>
+    <ol>
+        <li>
+            <strong>Define an auxiliary vector:</strong>
+            <p>Let <code>w</code> be a vector dependent on a real parameter <code>t</code>:</p>
+            <pre>w = u - t * v</pre>
+        </li>
+        <li>
+            <strong>Compute the inner product:</strong>
+            <pre>⟨w, w⟩ = ⟨u - t * v, u - t * v⟩</pre>
+            <p>Expanding this:</p>
+            <pre>⟨w, w⟩ = ||u||² - 2t * ⟨u, v⟩ + t² * ||v||²</pre>
+        </li>
+        <li>
+            <strong>Non-negativity condition:</strong>
+            <p>Since <code>⟨w, w⟩ ≥ 0</code> (the square of a norm is always non-negative), we treat this as a quadratic polynomial in <code>t</code>:</p>
+            <pre>f(t) = ||u||² - 2t * ⟨u, v⟩ + t² * ||v||²</pre>
+            <p>The discriminant of this quadratic must be non-positive:</p>
+            <pre>Δ = (-2 * ⟨u, v⟩)² - 4 * ||v||² * ||u||² ≤ 0</pre>
+        </li>
+        <li>
+            <strong>Conclusion:</strong>
+            <p>From <code>Δ ≤ 0</code>, it follows that:</p>
+            <pre>⟨u, v⟩² ≤ ||u||² * ||v||²</pre>
+        </li>
+    </ol>
 
-        <h2>Independence Between Random Variables</h2>
-        <p>For <strong>random variables</strong> \( X \) and \( Y \), independence means that their joint probability is the product of their marginal probabilities:</p>
-        
-        <p>\[ P(X = x \text{ and } Y = y) = P(X = x) \times P(Y = y) \]</p>
+    <h2>2. Reflect on the Concepts of Independence and Uncorrelation</h2>
 
-        <p>If the variables are independent, knowing the value of \( X \) does not give any insight into the value of \( Y \), and vice versa.</p>
+    <h3>Independence</h3>
+    <p>Two random variables <code>X</code> and <code>Y</code> are <strong>independent</strong> if their joint distribution can be expressed 
+        as the product of their marginal distributions:</p>
+    <pre>P(X = x, Y = y) = P(X = x) * P(Y = y)</pre>
+    <p>In terms of probability density functions:</p>
+    <pre>f<sub>X,Y</sub>(x, y) = f<sub>X</sub>(x) * f<sub>Y</sub>(y)</pre>
+    <p><strong>Properties:</strong></p>
+    <ul>
+        <li>Independence implies that knowing <code>X</code> provides no information about <code>Y</code>, and vice versa.</li>
+        <li>Two independent variables are <strong>always uncorrelated</strong>, but the reverse is not true.</li>
+    </ul>
 
-        <h2>Difference Between Independence and Correlation</h2>
-        <p>A key point is that <strong>independence</strong> and <strong>correlation</strong> are not the same. Independence implies a total lack of association, while correlation only measures the linear relationship. Two variables might be uncorrelated but still dependent.</p>
+    <h3>Uncorrelation</h3>
+    <p>Two random variables <code>X</code> and <code>Y</code> are <strong>uncorrelated</strong> if their <strong>covariance</strong> is zero:</p>
+    <pre>Cov(X, Y) = E[(X - E[X])(Y - E[Y])] = 0</pre>
+    <p>In simpler terms, uncorrelation means there is no <strong>linear relationship</strong> between <code>X</code> and <code>Y</code>.</p>
 
-        <h2>Importance in Statistics and Probability</h2>
-        <p>Independence is crucial in statistical modeling, such as in regression models, where errors are often assumed to be independent. Violating this assumption can lead to inaccuracies in inference and interpretation.</p>
+    <p><strong>Properties:</strong></p>
+    <ul>
+        <li>Uncorrelation does not imply independence.</li>
+        <li>For example, if <code>X</code> follows a standard normal distribution and <code>Y = X²</code>, then <code>X</code> and <code>Y</code> are uncorrelated but not independent.</li>
+    </ul>
+
+    <h3>Key Differences</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Independence</th>
+                <th>Uncorrelation</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Refers to the entire joint distribution of <code>X</code> and <code>Y</code>.</td>
+                <td>Refers only to the linear relationship between <code>X</code> and <code>Y</code>.</td>
+            </tr>
+            <tr>
+                <td>Implies uncorrelation.</td>
+                <td>Does not imply independence.</td>
+            </tr>
+            <tr>
+                <td>Independent variables are always uncorrelated.</td>
+                <td>Uncorrelated variables may still be dependent (non-linearly).</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>Measures of Independence and Uncorrelation</h3>
+    <ul>
+        <li><strong>Uncorrelation measure:</strong>
+            <pre>ρ<sub>X,Y</sub> = Cov(X, Y) / (σ<sub>X</sub> * σ<sub>Y</sub>)</pre>
+            where <code>σ<sub>X</sub></code> and <code>σ<sub>Y</sub></code> are the standard deviations of <code>X</code> and <code>Y</code>.
+        </li>
+        <li><strong>Independence measure:</strong>
+            <ul>
+                <li>Chi-square test (<code>χ²</code>) for testing the independence of two categorical variables.</li>
+                <li>Mutual Information (MI):
+                    <pre>I(X; Y) = ∫∫ f<sub>X,Y</sub>(x, y) log(f<sub>X,Y</sub>(x, y) / (f<sub>X</sub>(x) * f<sub>Y</sub>(y))) dx dy</pre>
+                </li>
+            </ul>
+        </li>
+    </ul>an lead to inaccuracies in inference and interpretation.</p>
     </div>
 
     <h1>Penetration Simulation</h1>
