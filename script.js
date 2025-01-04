@@ -52,7 +52,25 @@ document.addEventListener('DOMContentLoaded', function () {
                     y: { beginAtZero: true, ticks: { color: '#999' } },
                     x: { ticks: { color: '#999' } }
                 },
-                plugins: { legend: { display: true } }
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top',
+                        labels: {
+                            boxWidth: 20,
+                            font: { size: 12 }
+                        }
+                    },
+                    tooltip: {
+                        enabled: true
+                    }
+                },
+                layout: {
+                    padding: {
+                        top: 20,
+                        bottom: 20
+                    }
+                }
             }
         });
     }
@@ -85,7 +103,22 @@ document.addEventListener('DOMContentLoaded', function () {
                     y: { beginAtZero: true, ticks: { color: '#999' } },
                     x: { ticks: { color: '#999' } }
                 },
-                plugins: { legend: { display: true } }
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top',
+                        labels: {
+                            boxWidth: 20,
+                            font: { size: 12 }
+                        }
+                    }
+                },
+                layout: {
+                    padding: {
+                        top: 20,
+                        bottom: 20
+                    }
+                }
             }
         });
     }
@@ -108,89 +141,20 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function runRandomWalk() {
-    // Log per controllare gli elementi
-    console.log("Verifica elementi Random Walk:");
-
-    const hackerCountElement = document.getElementById('hackerCountRandom');
-    const serverCountElement = document.getElementById('serverCountRandom');
-    const penetrationProbElement = document.getElementById('penetrationProbRandom');
-    const isRelativeElement = document.getElementById('isRelative');
-
-    console.log("hackerCountElement:", hackerCountElement);
-    console.log("serverCountElement:", serverCountElement);
-    console.log("penetrationProbElement:", penetrationProbElement);
-    console.log("isRelativeElement:", isRelativeElement);
-
-    // Controlla se gli elementi sono null
-    if (!hackerCountElement) {
-        console.error("Elemento 'hackerCountRandom' non trovato!");
-    }
-    if (!serverCountElement) {
-        console.error("Elemento 'serverCountRandom' non trovato!");
-    }
-    if (!penetrationProbElement) {
-        console.error("Elemento 'penetrationProbRandom' non trovato!");
-    }
-    if (!isRelativeElement) {
-        console.error("Elemento 'isRelative' non trovato!");
-    }
-
-    // Se manca qualche elemento, interrompi l'esecuzione
-    if (!hackerCountElement || !serverCountElement || !penetrationProbElement || !isRelativeElement) {
-        return;
-    }
-
-    // Continua con la simulazione se tutto è presente
-    const numAttackers = parseInt(hackerCountElement.value);
-    const numServers = parseInt(serverCountElement.value);
-    const successProb = parseFloat(penetrationProbElement.value);
-    const isRelative = isRelativeElement.checked;
-
-    console.log("Valori letti:", { numAttackers, numServers, successProb, isRelative });
-
-    const results = Array.from({ length: numAttackers }, () => [0]);
-    for (let i = 0; i < numAttackers; i++) {
-        for (let j = 1; j <= numServers; j++) {
-            const step = Math.random() < successProb ? 1 : -1;
-            results[i].push(results[i][j - 1] + step);
-        }
-    }
-
-    renderLineChart(results, numServers);
-    renderHistogram(results.map(res => res[res.length - 1]));
-}
-
-
-    function runContinuousProcess() {
-        const numAttackers = parseInt(document.getElementById('hackerCountContinuous').value);
-        const lambda = parseFloat(document.getElementById('attackRate').value);
-        const timeSteps = parseInt(document.getElementById('timeStepsContinuous').value);
+        const numServers = parseInt(document.getElementById('serverCountRandom').value);
+        const numAttackers = parseInt(document.getElementById('hackerCountRandom').value);
+        const successProb = parseFloat(document.getElementById('penetrationProbRandom').value);
+        const isRelative = document.getElementById('isRelative').checked;
 
         const results = Array.from({ length: numAttackers }, () => [0]);
         for (let i = 0; i < numAttackers; i++) {
-            for (let j = 1; j <= timeSteps; j++) {
-                results[i].push(results[i][j - 1] + (Math.random() < lambda / timeSteps ? 1 : 0));
+            for (let j = 1; j <= numServers; j++) {
+                const step = Math.random() < successProb ? 1 : -1;
+                results[i].push(results[i][j - 1] + step);
             }
         }
 
-        renderLineChart(results, timeSteps);
-        renderHistogram(results.map(res => res[res.length - 1]));
-    }
-
-    function runRefinedEM() {
-        const numAttackers = parseInt(document.getElementById('hackerCountRefined').value);
-        const timeSteps = parseInt(document.getElementById('timeStepsRefined').value);
-        const jumpProb = parseFloat(document.getElementById('jumpProbability').value);
-
-        const results = Array.from({ length: numAttackers }, () => [0]);
-        for (let i = 0; i < numAttackers; i++) {
-            for (let j = 1; j <= timeSteps; j++) {
-                const jump = (Math.random() < jumpProb ? 1 : -1) * Math.sqrt(1 / timeSteps);
-                results[i].push(results[i][j - 1] + jump);
-            }
-        }
-
-        renderLineChart(results, timeSteps);
+        renderLineChart(results, numServers);
         renderHistogram(results.map(res => res[res.length - 1]));
     }
 
@@ -198,23 +162,18 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('runSimulation').addEventListener('click', function () {
         const selectedType = document.getElementById('simulationType').value;
 
-        // Mostra i parametri per il tipo selezionato
+        // Nascondi tutti i parametri
         document.querySelectorAll('.parameter-group').forEach(group => {
             group.style.display = 'none';
         });
 
+        // Mostra il gruppo corretto e avvia la simulazione
         if (selectedType === 'simpleEM') {
             document.getElementById('simpleEMParams').style.display = 'block';
             runSimpleEM();
         } else if (selectedType === 'randomWalk') {
             document.getElementById('randomWalkParams').style.display = 'block';
             runRandomWalk();
-        } else if (selectedType === 'continuousProcess') {
-            document.getElementById('continuousProcessParams').style.display = 'block';
-            runContinuousProcess();
-        } else if (selectedType === 'refinedEM') {
-            document.getElementById('refinedEMParams').style.display = 'block';
-            runRefinedEM();
         }
     });
 });
