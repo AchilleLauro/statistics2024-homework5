@@ -119,7 +119,7 @@
     </div>
 
     <h1>Penetration Simulation</h1>
-      <label for="simulationType">Select Simulation Type:</label>
+     <label for="simulationType">Select Simulation Type:</label>
     <select id="simulationType">
         <option value="simpleEM">Simple Euler-Maruyama</option>
         <option value="randomWalk">Random Walk</option>
@@ -136,7 +136,7 @@
         </div>
         
         <!-- Parametri specifici per Simple EM -->
-        <div class="parameter-group" id="simpleEMParams">
+        <div class="parameter-group" id="simpleEMParams" style="display: none;">
             <label for="serverCount">Number of Servers:</label>
             <input type="number" id="serverCount" min="1" value="10">
             <label for="penetrationProb">Success Probability:</label>
@@ -144,7 +144,7 @@
         </div>
 
         <!-- Parametri specifici per Random Walk -->
-        <div class="parameter-group" id="randomWalkParams">
+        <div class="parameter-group" id="randomWalkParams" style="display: none;">
             <label for="serverCount">Number of Servers:</label>
             <input type="number" id="serverCount" min="1" value="10">
             <label for="penetrationProb">Success Probability:</label>
@@ -154,7 +154,7 @@
         </div>
 
         <!-- Parametri specifici per Continuous Process -->
-        <div class="parameter-group" id="continuousProcessParams">
+        <div class="parameter-group" id="continuousProcessParams" style="display: none;">
             <label for="attackRate">Lambda:</label>
             <input type="number" id="attackRate" step="0.01" min="0" value="0.1">
             <label for="timeSteps">Time Steps:</label>
@@ -162,7 +162,7 @@
         </div>
 
         <!-- Parametri specifici per Refined EM -->
-        <div class="parameter-group" id="refinedEMParams">
+        <div class="parameter-group" id="refinedEMParams" style="display: none;">
             <label for="timeSteps">Time Steps:</label>
             <input type="number" id="timeSteps" min="1" value="50">
             <label for="jumpProbability">Jump Probability:</label>
@@ -182,7 +182,6 @@
     <div class="chart-container">
         <canvas id="attackerDistributionChart" width="400" height="200"></canvas>
     </div>
-
     <script src="script.js"></script>
 </body>
 </html>
