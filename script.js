@@ -52,25 +52,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     y: { beginAtZero: true, ticks: { color: '#999' } },
                     x: { ticks: { color: '#999' } }
                 },
-                plugins: {
-                    legend: {
-                        display: true,
-                        position: 'top',
-                        labels: {
-                            boxWidth: 20,
-                            font: { size: 12 }
-                        }
-                    },
-                    tooltip: {
-                        enabled: true
-                    }
-                },
-                layout: {
-                    padding: {
-                        top: 20,
-                        bottom: 20
-                    }
-                }
+                plugins: { legend: { display: true } }
             }
         });
     }
@@ -103,22 +85,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     y: { beginAtZero: true, ticks: { color: '#999' } },
                     x: { ticks: { color: '#999' } }
                 },
-                plugins: {
-                    legend: {
-                        display: true,
-                        position: 'top',
-                        labels: {
-                            boxWidth: 20,
-                            font: { size: 12 }
-                        }
-                    }
-                },
-                layout: {
-                    padding: {
-                        top: 20,
-                        bottom: 20
-                    }
-                }
+                plugins: { legend: { display: true } }
             }
         });
     }
@@ -158,23 +125,60 @@ document.addEventListener('DOMContentLoaded', function () {
         renderHistogram(results.map(res => res[res.length - 1]));
     }
 
+    function runContinuousProcess() {
+        const numAttackers = parseInt(document.getElementById('hackerCountContinuous').value);
+        const lambda = parseFloat(document.getElementById('attackRate').value);
+        const timeSteps = parseInt(document.getElementById('timeStepsContinuous').value);
+
+        const results = Array.from({ length: numAttackers }, () => [0]);
+        for (let i = 0; i < numAttackers; i++) {
+            for (let j = 1; j <= timeSteps; j++) {
+                results[i].push(results[i][j - 1] + (Math.random() < lambda / timeSteps ? 1 : 0));
+            }
+        }
+
+        renderLineChart(results, timeSteps);
+        renderHistogram(results.map(res => res[res.length - 1]));
+    }
+
+    function runRefinedEM() {
+        const numAttackers = parseInt(document.getElementById('hackerCountRefined').value);
+        const timeSteps = parseInt(document.getElementById('timeStepsRefined').value);
+        const jumpProb = parseFloat(document.getElementById('jumpProbability').value);
+
+        const results = Array.from({ length: numAttackers }, () => [0]);
+        for (let i = 0; i < numAttackers; i++) {
+            for (let j = 1; j <= timeSteps; j++) {
+                const jump = (Math.random() < jumpProb ? 1 : -1) * Math.sqrt(1 / timeSteps);
+                results[i].push(results[i][j - 1] + jump);
+            }
+        }
+
+        renderLineChart(results, timeSteps);
+        renderHistogram(results.map(res => res[res.length - 1]));
+    }
+
     // Listener per il pulsante di avvio
     document.getElementById('runSimulation').addEventListener('click', function () {
         const selectedType = document.getElementById('simulationType').value;
 
-        // Nascondi tutti i parametri
+        // Mostra i parametri per il tipo selezionato
         document.querySelectorAll('.parameter-group').forEach(group => {
             group.style.display = 'none';
         });
 
-        // Mostra il gruppo corretto e avvia la simulazione
         if (selectedType === 'simpleEM') {
             document.getElementById('simpleEMParams').style.display = 'block';
             runSimpleEM();
         } else if (selectedType === 'randomWalk') {
             document.getElementById('randomWalkParams').style.display = 'block';
             runRandomWalk();
+        } else if (selectedType === 'continuousProcess') {
+            document.getElementById('continuousProcessParams').style.display = 'block';
+            runContinuousProcess();
+        } else if (selectedType === 'refinedEM') {
+            document.getElementById('refinedEMParams').style.display = 'block';
+            runRefinedEM();
         }
     });
 });
-
