@@ -108,22 +108,58 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function runRandomWalk() {
-        const numServers = parseInt(document.getElementById('serverCountRandom').value);
-        const numAttackers = parseInt(document.getElementById('hackerCountRandom').value);
-        const successProb = parseFloat(document.getElementById('penetrationProbRandom').value);
-        const isRelative = document.getElementById('isRelative').checked;
+    // Log per controllare gli elementi
+    console.log("Verifica elementi Random Walk:");
 
-        const results = Array.from({ length: numAttackers }, () => [0]);
-        for (let i = 0; i < numAttackers; i++) {
-            for (let j = 1; j <= numServers; j++) {
-                const step = Math.random() < successProb ? 1 : -1;
-                results[i].push(results[i][j - 1] + step);
-            }
-        }
+    const hackerCountElement = document.getElementById('hackerCountRandom');
+    const serverCountElement = document.getElementById('serverCountRandom');
+    const penetrationProbElement = document.getElementById('penetrationProbRandom');
+    const isRelativeElement = document.getElementById('isRelative');
 
-        renderLineChart(results, numServers);
-        renderHistogram(results.map(res => res[res.length - 1]));
+    console.log("hackerCountElement:", hackerCountElement);
+    console.log("serverCountElement:", serverCountElement);
+    console.log("penetrationProbElement:", penetrationProbElement);
+    console.log("isRelativeElement:", isRelativeElement);
+
+    // Controlla se gli elementi sono null
+    if (!hackerCountElement) {
+        console.error("Elemento 'hackerCountRandom' non trovato!");
     }
+    if (!serverCountElement) {
+        console.error("Elemento 'serverCountRandom' non trovato!");
+    }
+    if (!penetrationProbElement) {
+        console.error("Elemento 'penetrationProbRandom' non trovato!");
+    }
+    if (!isRelativeElement) {
+        console.error("Elemento 'isRelative' non trovato!");
+    }
+
+    // Se manca qualche elemento, interrompi l'esecuzione
+    if (!hackerCountElement || !serverCountElement || !penetrationProbElement || !isRelativeElement) {
+        return;
+    }
+
+    // Continua con la simulazione se tutto è presente
+    const numAttackers = parseInt(hackerCountElement.value);
+    const numServers = parseInt(serverCountElement.value);
+    const successProb = parseFloat(penetrationProbElement.value);
+    const isRelative = isRelativeElement.checked;
+
+    console.log("Valori letti:", { numAttackers, numServers, successProb, isRelative });
+
+    const results = Array.from({ length: numAttackers }, () => [0]);
+    for (let i = 0; i < numAttackers; i++) {
+        for (let j = 1; j <= numServers; j++) {
+            const step = Math.random() < successProb ? 1 : -1;
+            results[i].push(results[i][j - 1] + step);
+        }
+    }
+
+    renderLineChart(results, numServers);
+    renderHistogram(results.map(res => res[res.length - 1]));
+}
+
 
     function runContinuousProcess() {
         const numAttackers = parseInt(document.getElementById('hackerCountContinuous').value);
