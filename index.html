@@ -119,7 +119,7 @@
     </div>
 
     <h1>Penetration Simulation</h1>
-     <label for="simulationType">Select Simulation Type:</label>
+      <label for="simulationType">Select Simulation Type:</label>
     <select id="simulationType">
         <option value="simpleEM">Simple Euler-Maruyama</option>
         <option value="randomWalk">Random Walk</option>
@@ -129,14 +129,10 @@
 
     <!-- Parametri dinamici -->
     <div id="parameterSection">
-        <!-- Parametri generici -->
-        <div class="parameter-group" id="genericParams">
-            <label for="hackerCount">Number of Attackers:</label>
-            <input type="number" id="hackerCount" min="1" value="5">
-        </div>
-        
         <!-- Parametri specifici per Simple EM -->
         <div class="parameter-group" id="simpleEMParams" style="display: none;">
+            <label for="hackerCountSimple">Number of Attackers:</label>
+            <input type="number" id="hackerCountSimple" min="1" value="5">
             <label for="serverCount">Number of Servers:</label>
             <input type="number" id="serverCount" min="1" value="10">
             <label for="penetrationProb">Success Probability:</label>
@@ -145,26 +141,32 @@
 
         <!-- Parametri specifici per Random Walk -->
         <div class="parameter-group" id="randomWalkParams" style="display: none;">
-            <label for="serverCount">Number of Servers:</label>
-            <input type="number" id="serverCount" min="1" value="10">
-            <label for="penetrationProb">Success Probability:</label>
-            <input type="number" id="penetrationProb" step="0.01" min="0" max="1" value="0.5">
+            <label for="hackerCountRandom">Number of Attackers:</label>
+            <input type="number" id="hackerCountRandom" min="1" value="5">
+            <label for="serverCountRandom">Number of Servers:</label>
+            <input type="number" id="serverCountRandom" min="1" value="10">
+            <label for="penetrationProbRandom">Success Probability:</label>
+            <input type="number" id="penetrationProbRandom" step="0.01" min="0" max="1" value="0.5">
             <label for="isRelative">Relative Frequency:</label>
             <input type="checkbox" id="isRelative">
         </div>
 
         <!-- Parametri specifici per Continuous Process -->
         <div class="parameter-group" id="continuousProcessParams" style="display: none;">
+            <label for="hackerCountContinuous">Number of Attackers:</label>
+            <input type="number" id="hackerCountContinuous" min="1" value="5">
             <label for="attackRate">Lambda:</label>
             <input type="number" id="attackRate" step="0.01" min="0" value="0.1">
-            <label for="timeSteps">Time Steps:</label>
-            <input type="number" id="timeSteps" min="1" value="50">
+            <label for="timeStepsContinuous">Time Steps:</label>
+            <input type="number" id="timeStepsContinuous" min="1" value="50">
         </div>
 
         <!-- Parametri specifici per Refined EM -->
         <div class="parameter-group" id="refinedEMParams" style="display: none;">
-            <label for="timeSteps">Time Steps:</label>
-            <input type="number" id="timeSteps" min="1" value="50">
+            <label for="hackerCountRefined">Number of Attackers:</label>
+            <input type="number" id="hackerCountRefined" min="1" value="5">
+            <label for="timeStepsRefined">Time Steps:</label>
+            <input type="number" id="timeStepsRefined" min="1" value="50">
             <label for="jumpProbability">Jump Probability:</label>
             <input type="number" id="jumpProbability" step="0.01" min="0" max="1" value="0.5">
         </div>
