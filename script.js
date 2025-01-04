@@ -1,15 +1,57 @@
-document.getElementById('simulationType').addEventListener('change', function () {
-    const type = this.value;
-
-    // Nascondi tutti i gruppi di parametri
+document.addEventListener('DOMContentLoaded', function () {
+    // Nascondi tutti i gruppi di parametri inizialmente
     document.querySelectorAll('.parameter-group').forEach(group => group.style.display = 'none');
+    document.getElementById('simpleEMParams').style.display = 'block'; // Mostra il primo gruppo per default
 
-    // Mostra solo i parametri pertinenti
-    if (type === 'simpleEM') document.getElementById('simpleEMParams').style.display = 'block';
-    else if (type === 'randomWalk') document.getElementById('randomWalkParams').style.display = 'block';
-    else if (type === 'continuousProcess') document.getElementById('continuousProcessParams').style.display = 'block';
-    else if (type === 'refinedEM') document.getElementById('refinedEMParams').style.display = 'block';
+    // Gestione del cambio del tipo di simulazione
+    document.getElementById('simulationType').addEventListener('change', function () {
+        const type = this.value;
+
+        // Nascondi tutti i gruppi di parametri
+        document.querySelectorAll('.parameter-group').forEach(group => group.style.display = 'none');
+
+        // Mostra il gruppo pertinente
+        if (type === 'simpleEM') {
+            document.getElementById('simpleEMParams').style.display = 'block';
+        } else if (type === 'randomWalk') {
+            document.getElementById('randomWalkParams').style.display = 'block';
+        } else if (type === 'continuousProcess') {
+            document.getElementById('continuousProcessParams').style.display = 'block';
+        } else if (type === 'refinedEM') {
+            document.getElementById('refinedEMParams').style.display = 'block';
+        }
+    });
+
+    // Gestione del pulsante di simulazione
+    document.getElementById('runSimulation').addEventListener('click', function () {
+        const type = document.getElementById('simulationType').value;
+        const simulator = new SDEFramework();
+
+        if (type === 'simpleEM') {
+            const numServers = parseInt(document.getElementById('serverCount').value);
+            const numAttackers = parseInt(document.getElementById('hackerCount').value);
+            const successProb = parseFloat(document.getElementById('penetrationProb').value);
+            simulator.simpleEulerMaruyama(numServers, numAttackers, successProb);
+        } else if (type === 'randomWalk') {
+            const numServers = parseInt(document.getElementById('serverCount').value);
+            const numAttackers = parseInt(document.getElementById('hackerCount').value);
+            const successProb = parseFloat(document.getElementById('penetrationProb').value);
+            const isRelative = document.getElementById('isRelative').checked;
+            simulator.randomWalk(numServers, numAttackers, successProb, isRelative);
+        } else if (type === 'continuousProcess') {
+            const numAttackers = parseInt(document.getElementById('hackerCount').value);
+            const lambda = parseFloat(document.getElementById('attackRate').value);
+            const timeSteps = parseInt(document.getElementById('timeSteps').value);
+            simulator.continuousProcess(numAttackers, lambda, timeSteps);
+        } else if (type === 'refinedEM') {
+            const numAttackers = parseInt(document.getElementById('hackerCount').value);
+            const timeSteps = parseInt(document.getElementById('timeSteps').value);
+            const p = parseFloat(document.getElementById('jumpProbability').value);
+            simulator.refinedEulerMaruyama(numAttackers, timeSteps, p);
+        }
+    });
 });
+
 
 // Esegui la simulazione
 
