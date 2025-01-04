@@ -1,80 +1,34 @@
 const serverPenCtx = document.getElementById('serverPenetrationChart').getContext('2d');
 const attackerDistCtx = document.getElementById('attackerDistributionChart').getContext('2d');
-let serverPenetrationGraph, attackerDistGraph;
 
-// Classe per gestire le simulazioni SDE
-class SDEFramework {
-    constructor() {
-        this.results = [];
+let serverPenetrationGraph = null;
+let attackerDistGraph = null;
+
+// Mostra solo i parametri specifici per il tipo di simulazione selezionato
+document.getElementById('simulationType').addEventListener('change', function () {
+    const selectedType = this.value;
+
+    // Nascondi tutti i gruppi di parametri
+    document.querySelectorAll('.parameter-group').forEach(group => {
+        group.style.display = 'none';
+    });
+
+    // Mostra solo i parametri generici e quelli specifici
+    document.getElementById('genericParams').style.display = 'block';
+    if (selectedType === 'simpleEM') {
+        document.getElementById('simpleEMParams').style.display = 'block';
+    } else if (selectedType === 'randomWalk') {
+        document.getElementById('randomWalkParams').style.display = 'block';
+    } else if (selectedType === 'continuousProcess') {
+        document.getElementById('continuousProcessParams').style.display = 'block';
+    } else if (selectedType === 'refinedEM') {
+        document.getElementById('refinedEMParams').style.display = 'block';
     }
+});
 
-    simpleEulerMaruyama(numServers, numAttackers, successProb) {
-        const attackResults = Array.from({ length: numAttackers }, () => [0]);
-        for (let attacker = 0; attacker < numAttackers; attacker++) {
-            let penetrations = 0;
-            for (let server = 1; server <= numServers; server++) {
-                if (Math.random() < successProb) penetrations++;
-                attackResults[attacker].push(penetrations);
-            }
-        }
-        this.results = attackResults;
-        this.visualizeResults(numServers, numAttackers, this.getFinalPenetrations());
-    }
-
-    randomWalk(numServers, numAttackers, successProb, isRelative = false) {
-        const attackResults = Array.from({ length: numAttackers }, () => [0]);
-        for (let attacker = 0; attacker < numAttackers; attacker++) {
-            let penetrations = 0;
-            for (let server = 1; server <= numServers; server++) {
-                penetrations += Math.random() < successProb ? 1 : -1;
-                attackResults[attacker].push(isRelative ? penetrations / numServers : penetrations);
-            }
-        }
-        this.results = attackResults;
-        this.visualizeResults(numServers, numAttackers, this.getFinalPenetrations());
-    }
-
-    continuousProcess(numAttackers, lambda, timeSteps) {
-        const dt = 1 / timeSteps;
-        const attackResults = Array.from({ length: numAttackers }, () => [0]);
-        for (let attacker = 0; attacker < numAttackers; attacker++) {
-            let penetrations = 0;
-            for (let step = 1; step <= timeSteps; step++) {
-                if (Math.random() < lambda * dt) penetrations++;
-                attackResults[attacker].push(penetrations);
-            }
-        }
-        this.results = attackResults;
-        this.visualizeResults(timeSteps, numAttackers, this.getFinalPenetrations());
-    }
-
-    refinedEulerMaruyama(numAttackers, timeSteps, p) {
-        const dt = 1 / timeSteps;
-        const attackResults = Array.from({ length: numAttackers }, () => [0]);
-        for (let attacker = 0; attacker < numAttackers; attacker++) {
-            for (let step = 1; step <= timeSteps; step++) {
-                const jump = (Math.random() < p ? 1 : -1) * Math.sqrt(dt);
-                const lastValue = attackResults[attacker][step - 1];
-                attackResults[attacker].push(lastValue + jump);
-            }
-        }
-        this.results = attackResults;
-        this.visualizeResults(timeSteps, numAttackers, this.getFinalPenetrations());
-    }
-
-    getFinalPenetrations() {
-        return this.results.map(path => path[path.length - 1]);
-    }
-
-    visualizeResults(steps, paths, finalPenetrations) {
-        renderLineChart(this.results, steps, paths);
-        renderHistogram(finalPenetrations);
-    }
-}
-
-// Funzione per il grafico lineare
-function renderLineChart(results, steps, paths) {
-    const labels = Array.from({ length: steps }, (_, i) => `${i + 1}`);
+// Distruggi grafico esistente e crea un nuovo grafico lineare
+function renderLineChart(results, steps) {
+    const labels = Array.from({ length: steps + 1 }, (_, i) => `${i}`);
     const datasets = results.map((data, idx) => ({
         label: `Path ${idx + 1}`,
         data,
@@ -85,13 +39,15 @@ function renderLineChart(results, steps, paths) {
     }));
 
     if (serverPenetrationGraph) {
-        serverPenetrationGraph.destroy(); // Distruggi il grafico esistente
+        serverPenetrationGraph.destroy();
     }
 
     serverPenetrationGraph = new Chart(serverPenCtx, {
         type: 'line',
         data: { labels, datasets },
         options: {
+            responsive: true,
+            maintainAspectRatio: false,
             scales: {
                 y: { beginAtZero: true, ticks: { color: '#999' } },
                 x: { ticks: { color: '#999' } }
@@ -101,13 +57,13 @@ function renderLineChart(results, steps, paths) {
     });
 }
 
-// Funzione per l'istogramma
+// Distruggi grafico esistente e crea un nuovo istogramma
 function renderHistogram(finalPenetrations) {
     const labels = [...new Set(finalPenetrations)].sort((a, b) => a - b);
     const data = labels.map(label => finalPenetrations.filter(x => x === label).length);
 
     if (attackerDistGraph) {
-        attackerDistGraph.destroy(); // Distruggi il grafico esistente
+        attackerDistGraph.destroy();
     }
 
     attackerDistGraph = new Chart(attackerDistCtx, {
@@ -123,6 +79,8 @@ function renderHistogram(finalPenetrations) {
             }]
         },
         options: {
+            responsive: true,
+            maintainAspectRatio: false,
             scales: {
                 y: { beginAtZero: true, ticks: { color: '#999' } },
                 x: { ticks: { color: '#999' } }
@@ -132,51 +90,80 @@ function renderHistogram(finalPenetrations) {
     });
 }
 
-// Event listeners per la selezione della simulazione
-document.getElementById('simulationType').addEventListener('change', () => {
-    const simulationType = document.getElementById('simulationType').value;
-    const parameterGroups = document.querySelectorAll('.parameter-group');
-    parameterGroups.forEach(group => group.style.display = 'none');
-
-    if (simulationType === 'simpleEM') {
-        document.getElementById('simpleEMParams').style.display = 'block';
-        document.getElementById('genericParams').style.display = 'block';
-    } else if (simulationType === 'randomWalk') {
-        document.getElementById('randomWalkParams').style.display = 'block';
-        document.getElementById('genericParams').style.display = 'block';
-    } else if (simulationType === 'continuousProcess') {
-        document.getElementById('continuousProcessParams').style.display = 'block';
-        document.getElementById('genericParams').style.display = 'block';
-    } else if (simulationType === 'refinedEM') {
-        document.getElementById('refinedEMParams').style.display = 'block';
-        document.getElementById('genericParams').style.display = 'block';
-    }
-});
-
-// Event listener per eseguire la simulazione
-document.getElementById('runSimulation').addEventListener('click', () => {
-    const simulationType = document.getElementById('simulationType').value;
+// Simulazioni
+function runSimpleEM() {
+    const numServers = parseInt(document.getElementById('serverCount').value);
     const numAttackers = parseInt(document.getElementById('hackerCount').value);
+    const successProb = parseFloat(document.getElementById('penetrationProb').value);
 
-    const simulator = new SDEFramework();
-
-    if (simulationType === 'simpleEM') {
-        const numServers = parseInt(document.getElementById('serverCount').value);
-        const successProb = parseFloat(document.getElementById('penetrationProb').value);
-        simulator.simpleEulerMaruyama(numServers, numAttackers, successProb);
-    } else if (simulationType === 'randomWalk') {
-        const numServers = parseInt(document.getElementById('serverCount').value);
-        const successProb = parseFloat(document.getElementById('penetrationProb').value);
-        const isRelative = document.getElementById('isRelative').checked;
-        simulator.randomWalk(numServers, numAttackers, successProb, isRelative);
-    } else if (simulationType === 'continuousProcess') {
-        const lambda = parseFloat(document.getElementById('attackRate').value);
-        const timeSteps = parseInt(document.getElementById('timeSteps').value);
-        simulator.continuousProcess(numAttackers, lambda, timeSteps);
-    } else if (simulationType === 'refinedEM') {
-        const timeSteps = parseInt(document.getElementById('timeSteps').value);
-        const p = parseFloat(document.getElementById('jumpProbability').value);
-        simulator.refinedEulerMaruyama(numAttackers, timeSteps, p);
+    const results = Array.from({ length: numAttackers }, () => [0]);
+    for (let i = 0; i < numAttackers; i++) {
+        for (let j = 1; j <= numServers; j++) {
+            results[i].push(results[i][j - 1] + (Math.random() < successProb ? 1 : 0));
+        }
     }
-});
 
+    renderLineChart(results, numServers);
+    renderHistogram(results.map(res => res[res.length - 1]));
+}
+
+function runRandomWalk() {
+    const numServers = parseInt(document.getElementById('serverCount').value);
+    const numAttackers = parseInt(document.getElementById('hackerCount').value);
+    const successProb = parseFloat(document.getElementById('penetrationProb').value);
+    const isRelative = document.getElementById('isRelative').checked;
+
+    const results = Array.from({ length: numAttackers }, () => [0]);
+    for (let i = 0; i < numAttackers; i++) {
+        for (let j = 1; j <= numServers; j++) {
+            const step = Math.random() < successProb ? 1 : -1;
+            results[i].push(results[i][j - 1] + step);
+        }
+    }
+
+    renderLineChart(results, numServers);
+    renderHistogram(results.map(res => res[res.length - 1]));
+}
+
+function runContinuousProcess() {
+    const numAttackers = parseInt(document.getElementById('hackerCount').value);
+    const lambda = parseFloat(document.getElementById('attackRate').value);
+    const timeSteps = parseInt(document.getElementById('timeSteps').value);
+
+    const results = Array.from({ length: numAttackers }, () => [0]);
+    for (let i = 0; i < numAttackers; i++) {
+        for (let j = 1; j <= timeSteps; j++) {
+            results[i].push(results[i][j - 1] + (Math.random() < lambda / timeSteps ? 1 : 0));
+        }
+    }
+
+    renderLineChart(results, timeSteps);
+    renderHistogram(results.map(res => res[res.length - 1]));
+}
+
+function runRefinedEM() {
+    const numAttackers = parseInt(document.getElementById('hackerCount').value);
+    const timeSteps = parseInt(document.getElementById('timeSteps').value);
+    const jumpProb = parseFloat(document.getElementById('jumpProbability').value);
+
+    const results = Array.from({ length: numAttackers }, () => [0]);
+    for (let i = 0; i < numAttackers; i++) {
+        for (let j = 1; j <= timeSteps; j++) {
+            const jump = (Math.random() < jumpProb ? 1 : -1) * Math.sqrt(1 / timeSteps);
+            results[i].push(results[i][j - 1] + jump);
+        }
+    }
+
+    renderLineChart(results, timeSteps);
+    renderHistogram(results.map(res => res[res.length - 1]));
+}
+
+// Listener per il pulsante di avvio
+document.getElementById('runSimulation').addEventListener('click', function () {
+    const selectedType = document.getElementById('simulationType').value;
+
+    if (selectedType === 'simpleEM') runSimpleEM();
+    else if (selectedType === 'randomWalk') runRandomWalk();
+    else if (selectedType === 'continuousProcess') runContinuousProcess();
+    else if (selectedType === 'refinedEM') runRefinedEM();
+});
