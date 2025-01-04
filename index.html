@@ -119,35 +119,49 @@
     </div>
 
     <h1>Penetration Simulation</h1>
-    <form id="configForm">
+     <form id="configForm">
         <div>
-            <label for="hackerCount">Attackers (m):</label>
-            <input type="number" id="hackerCount" value="50" min="1" required>
+            <label for="serverCount">Number of Servers:</label>
+            <input type="number" id="serverCount" min="1" value="10">
         </div>
         <div>
-            <label for="attackRate">Attack Rate (λ):</label>
-            <input type="number" id="attackRate" value="50" step="0.01" min="0" required>
+            <label for="hackerCount">Number of Attackers:</label>
+            <input type="number" id="hackerCount" min="1" value="5">
         </div>
         <div>
-            <label for="timeSteps">Time Steps (n):</label>
-            <input type="number" id="timeSteps" value="70" min="1" required>
+            <label for="penetrationProb">Success Probability:</label>
+            <input type="number" id="penetrationProb" step="0.01" min="0" max="1" value="0.5">
+        </div>
+        <div>
+            <label for="attackRate">Lambda (Continuous Process):</label>
+            <input type="number" id="attackRate" step="0.01" min="0" value="0.1">
+        </div>
+        <div>
+            <label for="timeSteps">Time Steps:</label>
+            <input type="number" id="timeSteps" min="1" value="50">
+        </div>
+        <div>
+            <label for="jumpProbability">Jump Probability (Refined EM):</label>
+            <input type="number" id="jumpProbability" step="0.01" min="0" max="1" value="0.5">
+        </div>
+        <div>
+            <label for="isRelative">Relative Frequency (Random Walk):</label>
+            <input type="checkbox" id="isRelative">
         </div>
     </form>
 
     <div class="button-container">
-        <button id="runSimulationBtn">Run Simulation</button>
+        <button id="runSimpleEM">Run Simple Euler-Maruyama</button>
+        <button id="runRandomWalk">Run Random Walk</button>
+        <button id="runContinuous">Run Continuous Process</button>
+        <button id="runRefinedEM">Run Refined EM</button>
     </div>
 
     <div class="chart-container">
-        <canvas id="serverPenetrationChart"></canvas>
+        <canvas id="serverPenetrationChart" width="400" height="200"></canvas>
     </div>
     <div class="chart-container">
-        <canvas id="attackerDistributionChart"></canvas>
-    </div>
-
-    <div id="statistics">
-        <p id="mean">Mean: N/A</p>
-        <p id="variance">Variance: N/A</p>
+        <canvas id="attackerDistributionChart" width="400" height="200"></canvas>
     </div>
 
     <script src="script.js"></script>
