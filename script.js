@@ -90,7 +90,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // Simulazioni
     function runSimpleEM() {
         const numServers = parseInt(document.getElementById('serverCount').value);
         const numAttackers = parseInt(document.getElementById('hackerCountSimple').value);
